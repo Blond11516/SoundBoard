@@ -3,6 +3,7 @@ namespace SoundBoard
 open SoundBoard
 open System
 open System.Drawing
+open System.Media
 open System.Windows.Forms
 open Microsoft.Extensions.Logging
 
@@ -23,9 +24,15 @@ type MyContext(logger: ILogger<MyContext>, trayIcon: NotifyIcon) =
 
         notifyIcon.ContextMenuStrip <- contextMenu
 
-        Keyboard.SetHook(fun key -> logger.LogInformation("{key}", key))
+        Keyboard.SetHook(MyContext.HandleKeyPress)
+
+        logger.LogInformation("Ready")
 
         new MyContext(logger, notifyIcon)
+
+    static member private HandleKeyPress _key =
+        use player = new SoundPlayer("Resources/SoundBites/HeyListen.wav")
+        player.Play()
 
     member _.Exit _sender _e = Application.Exit
 
