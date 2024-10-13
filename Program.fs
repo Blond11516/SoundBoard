@@ -3,11 +3,12 @@ namespace SoundBoard
 open System
 open System.Drawing
 open System.Windows.Forms
+open Microsoft.Extensions.Logging
 
-type MyContext(trayIcon: NotifyIcon) =
+type MyContext(logger: ILogger<MyContext>, trayIcon: NotifyIcon) =
     inherit ApplicationContext()
 
-    new() =
+    new(logger: ILogger<MyContext>) =
         let components = new ComponentModel.Container()
 
         let notifyIcon = new NotifyIcon(components)
@@ -21,14 +22,19 @@ type MyContext(trayIcon: NotifyIcon) =
 
         notifyIcon.ContextMenuStrip <- contextMenu
 
-        new MyContext(notifyIcon)
+        new MyContext(logger, notifyIcon)
 
-    member _.Exit _sender _e = ()
+    member _.Exit _sender _e = Application.Exit
 
 module Program =
     [<EntryPoint; STAThread>]
     let Main argv =
         // To customize application configuration such as set high DPI settings or default font,
         // see https://aka.ms/applicationconfiguration.
-        Application.Run(new MyContext())
+        let logger =
+            LoggerFactory
+                .Create(fun builder -> builder.AddConsole() |> ignore)
+                .CreateLogger<MyContext>()
+
+        Application.Run(new MyContext(logger))
         0
