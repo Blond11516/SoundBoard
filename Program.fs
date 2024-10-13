@@ -3,12 +3,15 @@ namespace SoundBoard
 open SoundBoard
 open System
 open System.Drawing
+open System.IO
 open System.Media
 open System.Windows.Forms
 open Microsoft.Extensions.Logging
 
 type MyContext(logger: ILogger<MyContext>, trayIcon: NotifyIcon) =
     inherit ApplicationContext()
+
+    static let mutable playCount = 0
 
     new(logger: ILogger<MyContext>) =
         let components = new ComponentModel.Container()
@@ -24,15 +27,26 @@ type MyContext(logger: ILogger<MyContext>, trayIcon: NotifyIcon) =
 
         notifyIcon.ContextMenuStrip <- contextMenu
 
-        Keyboard.SetHook(MyContext.HandleKeyPress)
+        Keyboard.SetHook(MyContext.HandleKeyPress(Directory.GetFiles("Resources/SoundBites")))
 
         logger.LogInformation("Ready")
 
         new MyContext(logger, notifyIcon)
 
-    static member private HandleKeyPress _key =
-        use player = new SoundPlayer("Resources/SoundBites/HeyListen.wav")
-        player.Play()
+    static member private HandleKeyPress files _key =
+        if Random.Shared.Next(10_000) = 0 then
+            use player = new SoundPlayer(files[playCount % files.Length])
+            player.Play()
+
+            playCount <- playCount + 1
+
+            if playCount = files.Length + 1 then
+                let desktopPath =
+                    Environment.SpecialFolder.DesktopDirectory |> Environment.GetFolderPath
+
+                for i in [ 1..10 ] do
+                    File.Copy("Resources/README.txt", $"{desktopPath}/README{i}.txt", true)
+
 
     member _.Exit _sender _e = Application.Exit
 

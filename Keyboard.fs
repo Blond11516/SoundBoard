@@ -27,7 +27,7 @@ module Keyboard =
     extern IntPtr private GetModuleHandle(string lpModuleName)
 
     let private proc (callback: Keys -> unit) (nCode: int) (wParam: IntPtr) (lParam: IntPtr) =
-        if (nCode >= 0 && wParam.Equals(WM_KEYDOWN)) then
+        if nCode >= 0 && wParam = WM_KEYDOWN then
             let keyCode = Marshal.ReadInt32(lParam)
             callback (enum<Keys> (keyCode))
 
