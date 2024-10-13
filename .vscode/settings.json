@@ -8,5 +8,6 @@
 	"FSharp.codeLenses.references.enabled": false,
 	"indentRainbow.ignoreErrorLanguages": [
 		"fsharp"
-	]
+	],
+	"color-highlight.enable": false
 }

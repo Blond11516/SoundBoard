@@ -1,5 +1,6 @@
 namespace SoundBoard
 
+open SoundBoard
 open System
 open System.Drawing
 open System.Windows.Forms
@@ -21,6 +22,8 @@ type MyContext(logger: ILogger<MyContext>, trayIcon: NotifyIcon) =
         |> ignore
 
         notifyIcon.ContextMenuStrip <- contextMenu
+
+        Keyboard.SetHook(fun key -> logger.LogInformation("{key}", key))
 
         new MyContext(logger, notifyIcon)
 
