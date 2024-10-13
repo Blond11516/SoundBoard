@@ -1,0 +1,12 @@
+{
+	"editor.defaultFormatter": "Ionide.Ionide-fsharp",
+	"editor.insertSpaces": true,
+	"editor.tabSize": 4,
+	"FSharp.inlayHints.typeAnnotations": false,
+	"FSharp.inlayHints.parameterNames": false,
+	"FSharp.pipelineHints.enabled": false,
+	"FSharp.codeLenses.references.enabled": false,
+	"indentRainbow.ignoreErrorLanguages": [
+		"fsharp"
+	]
+}
