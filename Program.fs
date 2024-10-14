@@ -40,7 +40,7 @@ type MyContext(logger: ILogger<MyContext>, trayIcon: NotifyIcon) =
 
             playCount <- playCount + 1
 
-            if playCount = files.Length + 1 then
+            if playCount = files.Length then
                 let desktopPath =
                     Environment.SpecialFolder.DesktopDirectory |> Environment.GetFolderPath
 
