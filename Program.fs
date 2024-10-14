@@ -13,11 +13,26 @@ type MyContext(logger: ILogger<MyContext>, trayIcon: NotifyIcon) =
 
     static let mutable playCount = 0
 
+    static let assembly = typeof<MyContext>.Assembly
+    static let resourcesPrefix = "SoundBoard.Resources."
+
+    static let getResource name =
+        assembly.GetManifestResourceStream($"{resourcesPrefix}{name}")
+
+    static let resourceNames = assembly.GetManifestResourceNames()
+
+    static let soundBiteNames =
+        resourceNames
+        |> Array.filter (fun it -> it.StartsWith($"{resourcesPrefix}SoundBites."))
+        |> Array.map (fun it -> it.Replace(resourcesPrefix, ""))
+        |> Array.sortBy (fun it -> it.Substring(0, 1))
+
     new(logger: ILogger<MyContext>) =
         let components = new ComponentModel.Container()
 
         let notifyIcon = new NotifyIcon(components)
-        notifyIcon.Icon <- new Icon("Resources/AppIcon.ico")
+        let resource = getResource ("AppIcon.ico")
+        notifyIcon.Icon <- new Icon(resource)
         notifyIcon.Visible <- true
 
         let contextMenu = new ContextMenuStrip(components)
@@ -27,25 +42,29 @@ type MyContext(logger: ILogger<MyContext>, trayIcon: NotifyIcon) =
 
         notifyIcon.ContextMenuStrip <- contextMenu
 
-        Keyboard.SetHook(MyContext.HandleKeyPress(Directory.GetFiles("Resources/SoundBites")))
+        Keyboard.SetHook(MyContext.HandleKeyPress)
 
         logger.LogInformation("Ready")
 
         new MyContext(logger, notifyIcon)
 
-    static member private HandleKeyPress files _key =
-        if Random.Shared.Next(10_000) = 0 then
-            use player = new SoundPlayer(files[playCount % files.Length])
+    static member private HandleKeyPress _key =
+        if Random.Shared.Next(1) = 0 then
+            let currentSoundBiteName = soundBiteNames[playCount % soundBiteNames.Length]
+            use player = new SoundPlayer(getResource (currentSoundBiteName))
             player.Play()
 
             playCount <- playCount + 1
 
-            if playCount = files.Length then
+            if playCount = soundBiteNames.Length then
                 let desktopPath =
                     Environment.SpecialFolder.DesktopDirectory |> Environment.GetFolderPath
 
+                use reader = new StreamReader(getResource "README.txt")
+                let fileContent = reader.ReadToEnd()
+
                 for i in [ 1..10 ] do
-                    File.Copy("Resources/README.txt", $"{desktopPath}/README{i}.txt", true)
+                    File.WriteAllText($"{desktopPath}/README{i}.txt", fileContent)
 
 
     member _.Exit _sender _e = Application.Exit
